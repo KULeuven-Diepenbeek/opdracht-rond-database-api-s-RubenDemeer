@@ -23,6 +23,8 @@ public class SpelerRepositoryJDBIimplTest extends SpelerRepositoryTest {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
+    // super.spelerRepository = new SpelerRepositoryJDBCimpl(connectionManager.getConnection());
+
     super.spelerRepository = new SpelerRepositoryJDBIimpl(super.CONNECTIONSTRING_TO_TEST_DB, super.USER_OF_TEST_DB,
         super.PWD_OF_TEST_DB);
     assertNotNull("SpelerRepository must be initialized by the subclass", super.spelerRepository);

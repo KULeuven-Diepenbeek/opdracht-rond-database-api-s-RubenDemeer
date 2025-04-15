@@ -9,38 +9,62 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
 
   // Constructor
   SpelerRepositoryJDBIimpl(String connectionString, String user, String pwd) {
-    // TODO: vul verder aan of verbeter
-    this.jdbi = null;
+    jdbi = Jdbi.create(connectionString, user, pwd);
   }
 
   @Override
   public void addSpelerToDb(Speler speler) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'addSpelerToDb'");
+    jdbi.withHandle(handle -> {
+      return handle.execute("INSERT INTO speler (tennisvlaanderenid, naam, punten) VALUES (?, ?, ?)",
+          speler.getTennisvlaanderenid(), speler.getNaam(), speler.getPunten());
+    });
   }
 
   @Override
   public Speler getSpelerByTennisvlaanderenId(int tennisvlaanderenId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getSpelerByTennisvlaanderenId'");
+    return (Speler) jdbi.withHandle(handle -> {
+      return handle.createQuery("SELECT * FROM speler WHERE tennisvlaanderenid = :nummer")
+          .bind("nummer", tennisvlaanderenId)
+          .mapToBean(Speler.class)
+          .first();
+    });
   }
 
   @Override
   public List<Speler> getAllSpelers() {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    return jdbi.withHandle(handle -> {
+      return handle.createQuery("SELECT * FROM speler")
+          .mapToBean(Speler.class)
+          .list();
+    });
   }
 
   @Override
   public void updateSpelerInDb(Speler speler) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'updateSpelerInDb'");
+    int affectedRows = jdbi.withHandle(handle -> {
+      return handle
+          .createUpdate(
+              "UPDATE student SET naam = :naam, punten = :punten, WHERE tennisvlaanderenid = :tennisvlaanderenId;")
+          .bindBean(speler)
+          .execute();
+    });
+    if (affectedRows == 0) {
+      throw new InvalidSpelerException("Invalid Speler met identification: " + speler.getTennisvlaanderenid());
+    }
   }
 
   @Override
   public void deleteSpelerInDb(int tennisvlaanderenid) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'deleteSpelerInDb'");
+    int affectedRows = jdbi.withHandle(handle -> {
+      return handle
+          .createUpdate(
+              "DELETE FROM student WHERE tennisvlaanderenid = :nummer")
+          .bind("nummer", tennisvlaanderenid)
+          .execute();
+    });
+    if (affectedRows == 0) {
+      throw new InvalidSpelerException("Invalid Speler met identification: " + tennisvlaanderenid);
+    }
   }
 
   @Override
