@@ -20,7 +20,7 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
     try {
       PreparedStatement prepared = (PreparedStatement) connection
           .prepareStatement("INSERT INTO speler (tennisvlaanderenid, naam, punten) VALUES (?, ?, ?);");
-      prepared.setInt(1, speler.getTennisvlaanderenid()); // First questionmark
+      prepared.setInt(1, speler.getTennisvlaanderenId()); // First questionmark
       prepared.setString(2, speler.getNaam()); // Second questionmark
       prepared.setInt(3, speler.getPunten()); // Third questionmark
       prepared.executeUpdate();
@@ -51,7 +51,7 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
       }
       
       // tornooien
-      stmt = "SELECT v.* FROM speler_speelt_tornooi svv JOIN tornooi v ON svv.tornooi = v.id WHERE svv.speler = "+ found_speler.getTennisvlaanderenid() +";";
+      stmt = "SELECT v.* FROM speler_speelt_tornooi svv JOIN tornooi v ON svv.tornooi = v.id WHERE svv.speler = "+ found_speler.getTennisvlaanderenId() +";";
       result = s.executeQuery(stmt);
       while (result.next()) {
         int tornooiId = result.getInt("id");
@@ -62,7 +62,7 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
 
       // wedstrijden
       for(int i = 1; i < 3; i++){ // speler1, speler2
-        stmt = "SELECT * FROM wedstrijd WHERE speler"+i+" = "+ found_speler.getTennisvlaanderenid() +";";
+        stmt = "SELECT * FROM wedstrijd WHERE speler"+i+" = "+ found_speler.getTennisvlaanderenId() +";";
         result = s.executeQuery(stmt);
         while (result.next()) {
           int wedstrijdId = result.getInt("id");
@@ -112,13 +112,13 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
 
   @Override
   public void updateSpelerInDb(Speler speler) {
-    getSpelerByTennisvlaanderenId(speler.getTennisvlaanderenid()); // Check if speler exists
+    getSpelerByTennisvlaanderenId(speler.getTennisvlaanderenId()); // Check if speler exists
     try {
       PreparedStatement prepared = (PreparedStatement) connection
           .prepareStatement("UPDATE speler SET naam = ?, punten = ? WHERE tennisvlaanderenid = ?;");
       prepared.setString(1, speler.getNaam()); // First questionmark
       prepared.setInt(2, speler.getPunten()); // Second questionmark
-      prepared.setInt(3, speler.getTennisvlaanderenid()); // Third questionmark
+      prepared.setInt(3, speler.getTennisvlaanderenId()); // Third questionmark
       prepared.executeUpdate();
       prepared.close();
       connection.commit();
@@ -152,21 +152,22 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
     try{
       PreparedStatement prepared = (PreparedStatement) connection
           .prepareStatement("SELECT t.clubnaam, w.finale, w.winnaar " +
-          "FROM wedstrijd w "+
+          "FROM wedstrijd w " +
           "JOIN tornooi t ON w.tornooi = t.id " + 
-          "WHERE (speler1 = ? OR speler2 = ?) "+
-          "ORDER BY w.finale ASC "+
-          "LIMIT 1;");
-      prepared.setInt(1, speler.getTennisvlaanderenid()); // First questionmark
-      prepared.setInt(2, speler.getTennisvlaanderenid()); // Second questionmark
+          "WHERE (speler1 = ? OR speler2 = ?) " +
+          "ORDER BY w.finale DESC; ");
+      prepared.setInt(1, speler.getTennisvlaanderenId()); // First questionmark
+      prepared.setInt(2, speler.getTennisvlaanderenId()); // Second questionmark
       ResultSet result = prepared.executeQuery();
       String finaleString = null;
-      if (result.next()) {
-        String clubnaam = result.getString("clubnaam");
+      String clubnaam = null;
+      while (result.next()) {
+        clubnaam = result.getString("clubnaam");
         int finale = result.getInt("finale");
         int winnaar = result.getInt("winnaar");
         if(finale == 1 && winnaar == tennisvlaanderenid){
           finaleString = "winst";
+          break;
         }else if(finale == 1){
           finaleString = "finale";
         }else if(finale == 2){
@@ -176,10 +177,9 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
         }else{
           finaleString = "lager dan kwart finale";
         }
-        resultString = "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
-      }else{
-        resultString = "Geen tornooien gevonden voor deze speler.";
+        
       }
+      resultString = "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
       result.close();
       prepared.close();
       connection.commit();
@@ -190,14 +190,14 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
   }
 
   @Override
-  public void addSpelerToTornooi(int tornooiId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
+  public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
+    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'addSpelerToTornooi'");
   }
 
   @Override
-  public void removeSpelerFromTornooi(int tornooiId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
+  public void removeSpelerFromTornooi(int tornooiId, int tennisvlaanderenId) {
+    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'removeSpelerFromTornooi'");
   }
 }

@@ -23,8 +23,12 @@ public class Speler {
     this.tornooien = new ArrayList<>();
   }
 
-  public int getTennisvlaanderenid() {
+  public int getTennisvlaanderenId() {
     return tennisvlaanderenId;
+  }
+
+  public void setTennisvlaanderenId(int tennisvlaanderenId) {
+    this.tennisvlaanderenId = tennisvlaanderenId;
   }
 
   public String getNaam() {
