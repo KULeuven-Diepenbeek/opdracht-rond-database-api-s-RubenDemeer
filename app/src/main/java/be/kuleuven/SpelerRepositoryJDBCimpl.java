@@ -191,13 +191,33 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
 
   @Override
   public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'addSpelerToTornooi'");
+    try {
+      PreparedStatement prepared = (PreparedStatement) connection
+          .prepareStatement("INSERT INTO speler_speelt_tornooi (speler, tornooi) VALUES (?, ?);");
+      prepared.setInt(1, tennisvlaanderenId); // First questionmark
+      prepared.setInt(2, tornooiId); // Second questionmark
+      prepared.executeUpdate();
+      prepared.close();
+      connection.commit();
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public void removeSpelerFromTornooi(int tornooiId, int tennisvlaanderenId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'removeSpelerFromTornooi'");
+    try {
+      PreparedStatement prepared = (PreparedStatement) connection
+          .prepareStatement("DELETE FROM speler_speelt_tornooi WHERE speler = ? AND tornooi = ?;");
+      prepared.setInt(1, tennisvlaanderenId); // First questionmark
+      prepared.setInt(2, tornooiId); // Second questionmark
+      prepared.executeUpdate();
+      prepared.close();
+      connection.commit();
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

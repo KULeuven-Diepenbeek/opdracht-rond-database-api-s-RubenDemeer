@@ -117,13 +117,17 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
 
   @Override
   public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'addSpelerToTornooi'");
+    jdbi.withHandle(handle -> {
+      return handle.execute("INSERT INTO speler_speelt_tornooi (tornooi, speler) VALUES (?, ?)",
+          tornooiId, tennisvlaanderenId);
+    });
   }
 
   @Override
   public void removeSpelerFromTornooi(int tornooiId, int tennisvlaanderenId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'removeSpelerFromTornooi'");
+    jdbi.withHandle(handle -> {
+      return handle.execute("DELETE FROM speler_speelt_tornooi WHERE tornooi = ? AND speler = ?",
+          tornooiId, tennisvlaanderenId);
+    });
   }
 }
