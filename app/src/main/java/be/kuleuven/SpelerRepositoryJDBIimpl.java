@@ -77,48 +77,40 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
   @Override
   public String getHoogsteRankingVanSpeler(int tennisvlaanderenid) {
     Speler speler = getSpelerByTennisvlaanderenId(tennisvlaanderenid); // Check if speler exists
-    List<Wedstrijd> resultList = jdbi.withHandle(handle -> {
-      return (handle.createQuery(
-        "SELECT * " +
-        "FROM wedstrijd " +
-        "WHERE (speler1 = :spelerId OR speler2 = :spelerId) " +
-        "ORDER BY finale DESC;")
-        .bind("spelerId", speler.getTennisvlaanderenId()))
-        .mapToBean(Wedstrijd.class)
-        .list();
-      });
-    String clubnaam = null;
-    String finaleString = null;
-    Wedstrijd wedstrijd = null;
-      while(resultList.iterator().hasNext()) {
-        wedstrijd = resultList.iterator().next();
-        if (wedstrijd.getFinale() == 1) { 
-          if (wedstrijd.getWinnaarId() == speler.getTennisvlaanderenId()) {
+    String resultString = null;
+
+    resultString = jdbi.withHandle(handle -> {
+      return handle.createQuery(
+          "SELECT t.clubnaam, w.finale, w.winnaar " +
+          "FROM wedstrijd w " +
+          "JOIN tornooi t ON w.tornooi = t.id " +
+          "WHERE (w.speler1 = :spelerId OR w.speler2 = :spelerId) " +
+          "ORDER BY CASE WHEN w.finale = 1 AND w.winnaar = :spelerId THEN 0 ELSE w.finale END ASC;")
+        .bind("spelerId", speler.getTennisvlaanderenId())
+        .map((rs, ctx) -> {
+          String clubnaam = rs.getString("clubnaam");
+          int finale = rs.getInt("finale");
+          int winnaar = rs.getInt("winnaar");
+          String finaleString;
+
+          if (finale == 1 && winnaar == tennisvlaanderenid) {
             finaleString = "winst";
-            break;
-          } else {
+          } else if (finale == 1) {
             finaleString = "finale";
-          }  
-        }else if(wedstrijd.getFinale() == 2){
-          finaleString = "halve finale";
-        }else if(wedstrijd.getFinale() == 4){
-          finaleString = "kwart finale";
-        }else{
-          finaleString = "lager dan kwart finale";
-        }
-      }  
-    // tornooi id ophalen
-    int tornooiId = wedstrijd.getTornooiId();
-    // clubnaam ophalen
-    clubnaam = jdbi.withHandle(handle -> {
-      return handle.createQuery("SELECT clubnaam FROM tornooi WHERE id = :id")
-          .bind("id", tornooiId)
-          .mapTo(String.class)
-          .findOne()
-          .orElse(null);
-    });    
-      
-    String resultString = "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
+          } else if (finale == 2) {
+            finaleString = "halve finale";
+          } else if (finale == 4) {
+            finaleString = "kwart finale";
+          } else {
+            finaleString = "lager dan kwart finale";
+          }
+
+          return "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
+        })
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Geen resultaten gevonden voor speler met ID: " + tennisvlaanderenid));
+    });
+
     return resultString;
   }
 
