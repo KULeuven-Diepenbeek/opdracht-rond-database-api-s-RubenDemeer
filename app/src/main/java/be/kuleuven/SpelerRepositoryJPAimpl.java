@@ -72,23 +72,9 @@ public class SpelerRepositoryJPAimpl implements SpelerRepository {
   @Override
   public String getHoogsteRankingVanSpeler(int tennisvlaanderenId) {
     Speler speler = getSpelerByTennisvlaanderenId(tennisvlaanderenId);
-    int speler1 = tennisvlaanderenId;
-    int speler2 = tennisvlaanderenId;
-    String clubnaam = null;
     String finaleString = null;
-    
-    CriteriaBuilder cb = em.getCriteriaBuilder();
-    CriteriaQuery<Wedstrijd> cq = cb.createQuery(Wedstrijd.class);
-    Root<Wedstrijd> root = cq.from(Wedstrijd.class);
-    cq.select(root);
-    cq.where(cb.or(
-      cb.equal(root.get("speler1"), speler1),
-      cb.equal(root.get("speler2"), speler2)
-    ));
-    List<Wedstrijd> wedstrijden = em.createQuery(cq).getResultList();
-    for (Wedstrijd wedstrijd : wedstrijden) {
-        speler.addWedstrijd(wedstrijd);
-    }
+    String clubnaam = null;
+    List<Wedstrijd> wedstrijden = speler.getWedstrijden();
     Wedstrijd wedstrijd = (Wedstrijd) wedstrijden.stream()
         .filter(w -> w.getWinnaarId() == speler.getTennisvlaanderenId() && w.getFinale() == 1)
         .findAny()
@@ -102,16 +88,17 @@ public class SpelerRepositoryJPAimpl implements SpelerRepository {
           } else {
             finaleString = "finale";
           }
+          break;
           
         case 2:
           finaleString = "halve finale";
-          
+          break;
         case 4:
           finaleString = "kwart finale";
-          
+          break;
         default:
           finaleString ="groepsfase";
-          
+          break;
       }
       int tornooiId = wedstrijd.getTornooiId();
       Tornooi tornooi = em.find(Tornooi.class, tornooiId);
@@ -123,6 +110,7 @@ public class SpelerRepositoryJPAimpl implements SpelerRepository {
     }
     return "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
   }
+  
 
   @Override
   public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
